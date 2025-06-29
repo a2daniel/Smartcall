@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -13,15 +13,31 @@ import {
 import { ChevronDown, ChevronUp } from "lucide-react";
 import "react-calendar/dist/Calendar.css";
 
-interface ManagerCalendarProps {
-  shifts: any[];
-}
-
-export default function ManagerCalendar({ shifts }: ManagerCalendarProps) {
+export default function ManagerCalendar() {
+  const [shifts, setShifts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedShifts, setSelectedShifts] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchShifts = async () => {
+      try {
+        const response = await fetch('/api/shifts/assigned');
+        if (response.ok) {
+          const data = await response.json();
+          setShifts(data.shifts || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch shifts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShifts();
+  }, []);
 
   // Filter only assigned shifts for the calendar
   const assignedShifts = shifts.filter(shift => shift.assignedToId && shift.status === 'ASSIGNED');
@@ -114,7 +130,12 @@ export default function ManagerCalendar({ shifts }: ManagerCalendarProps) {
             className="overflow-hidden"
           >
             <div className="p-4 pt-0">
-              {assignedShifts.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading shifts...</p>
+                </div>
+              ) : assignedShifts.length === 0 ? (
                 <motion.div
                   className="text-center py-12"
                   initial={{ opacity: 0 }}

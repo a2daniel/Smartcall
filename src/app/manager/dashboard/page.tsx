@@ -1,20 +1,10 @@
+"use client";
 import React from "react";
 import CallOutLogList from "./CallOutLogList";
 import ManagerCalendar from "./ManagerCalendar";
 import ManagerHeader from "./ManagerHeader";
-import { PrismaClient } from '@prisma/client';
 
-export default async function ManagerDashboard() {
-  // Fetch all shifts for the calendar
-  const prisma = new PrismaClient();
-  const allShifts = await prisma.shift.findMany({
-    include: {
-      assignedTo: true,
-      callOutLogs: { include: { user: true } },
-    },
-    orderBy: { start: 'asc' },
-  });
-
+export default function ManagerDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       {/* Background Pattern */}
@@ -51,7 +41,7 @@ export default async function ManagerDashboard() {
           {/* Right Column: Calendar */}
           <div className="xl:col-span-1">
             <div className="sticky top-32">
-              <ManagerCalendar shifts={allShifts} />
+              <ManagerCalendar />
             </div>
           </div>
         </div>
