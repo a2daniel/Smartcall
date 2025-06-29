@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
       orderBy: { start: 'asc' },
     });
     return NextResponse.json({ shifts });
-  } catch (e) {
+  } catch (_error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 } 

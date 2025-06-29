@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   // Socket.IO will handle the upgrade to WebSocket
   // This endpoint is just for Socket.IO to attach to
   return new Response('Socket.IO server is running', { 
