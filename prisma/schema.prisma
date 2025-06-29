@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  email           String   @unique
+  password        String
+  role            Role
+  status          UserStatus @default(ACTIVE)
+  reliabilityScore Float   @default(1.0)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  lastLoginAt     DateTime?
+  shifts          Shift[]  @relation("AssignedShifts")
+  availabilities  Availability[]
+  callOutLogs     CallOutLog[]
+  acceptedCallOuts CallOutLog[] @relation("AcceptedBy")
+  auditLogs       AuditLog[]
+}
+
+enum Role {
+  STAFF
+  MANAGER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Shift {
+  id            Int      @id @default(autoincrement())
+  start         DateTime
+  end           DateTime
+  requiredSkill String
+  assignedTo    User?    @relation("AssignedShifts", fields: [assignedToId], references: [id])
+  assignedToId  Int?
+  status        ShiftStatus
+  callOutLogs   CallOutLog[]
+}
+
+enum ShiftStatus {
+  OPEN
+  ASSIGNED
+  FILLED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+model Availability {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  dayOfWeek Int      // 0=Sunday, 6=Saturday
+  start     String   // e.g., "08:00"
+  end       String   // e.g., "16:00"
+}
+
+model CallOutLog {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  shift       Shift     @relation(fields: [shiftId], references: [id])
+  shiftId     Int
+  status      CallOutStatus @default(PENDING)
+  timestamp   DateTime  @default(now())
+  reason      String
+  acceptedBy  User?     @relation("AcceptedBy", fields: [acceptedById], references: [id])
+  acceptedById Int?
+  filledAt    DateTime?
+  respondedAt DateTime?
+  missed      Boolean   @default(false)
+}
+
+enum CallOutStatus {
+  PENDING
+  FILLED
+  CANCELLED
+}
+
+model AuditLog {
+  id           Int       @id @default(autoincrement())
+  user         User      @relation(fields: [userId], references: [id])
+  userId       Int
+  actionType   ActionType
+  actionDetail String
+  timestamp    DateTime  @default(now())
+  ipAddress    String?
+  userAgent    String?
+}
+
+enum ActionType {
+  LOGIN
+  LOGOUT
+  SHIFT_ACCEPTED
+  SHIFT_MISSED
+  SHIFT_CANCELLED
+  CALLOUT_CREATED
+  CALLOUT_CANCELLED
+  SHIFT_REASSIGNED
+  USER_ACTIVATED
+  USER_DEACTIVATED
+  USER_SUSPENDED
+  PROFILE_UPDATED
+}
