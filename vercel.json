@@ -1,6 +1,5 @@
 {
-  "buildCommand": "npm run build && npx prisma generate && npx prisma migrate deploy",
-  "installCommand": "npm install && npx prisma generate",
+  "buildCommand": "./build.sh",
   "framework": "nextjs",
   "functions": {
     "src/app/api/**/*.ts": {
